@@ -14,15 +14,24 @@ import {
     BackHandler,
     TextInput,
     ScrollView,
+    Alert,
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
 import { NavigationEvents } from 'react-navigation';
-
+import { Snackbar } from "react-native-paper";
+import WebHandler from "../../Data/Remote/WebHandler";
+import Routs from "../../Data/Remote/Routs";
+const wbh = new WebHandler()
 const { width, height } = Dimensions.get('screen');
 
 class LoginScreen extends Component {
-
+    constructor(props) {
+        super(props)
+        this.state = {
+            OTP: null
+        }
+    }
     componentDidMount() {
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
     }
@@ -43,45 +52,53 @@ class LoginScreen extends Component {
                     BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
                 }} />
                 <Login navigation={this.props.navigation} />
+
             </View>
         )
     }
 }
+handleMobileVerify = () => {
 
+}
 const Login = ({ navigation }) => {
 
     const [selectedArea, setSelectedArea] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [areas, setAreas] = useState([]);
+    const [OTP, setOTP] = useState('')
+    const [isOTP, setISOTP] = useState(false)
     const [search, setSearch] = useState('');
     const [data_temp, setdata_temp] = useState([]);
     const [mobileNumber, setMobileNumber] = useState('');
+    const [showSnackBar, setShowSnackBar] = useState(false);
+    const [snackBarMsg, setSnackBarMsg] = useState('');
 
-    useEffect(() => {
-        fetch("https://restcountries.eu/rest/v2/all")
-            .then(response => response.json())
-            .then(data => {
-                let areaData = data.map(item => {
-                    return {
-                        code: item.alpha2Code,
-                        name: item.name,
-                        callingCode: `+${item.callingCodes[0]}`,
-                        flag: `https://www.countryflags.io/${item.alpha2Code}/flat/64.png`
-                    }
-                })
-                setAreas(areaData);
-                setdata_temp(areaData);
-                if (areaData.length > 0) {
-                    let defaultData = areaData.filter(a => a.code == "US");
-                    if (defaultData.length > 0) {
-                        setSelectedArea(defaultData[0]);
-                    }
-                }
-            })
-    }, [])
+    // useEffect(() => {
+    //     fetch("https://restcountries.eu/rest/v2/all")
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             console.log(data)
+    //             let areaData = data.map(item => {
+    //                 return {
+    //                     code: item.alpha2Code,
+    //                     name: item.name,
+    //                     callingCode: `+${item.callingCodes[0]}`,
+    //                     flag: `https://www.countryflags.io/${item.alpha2Code}/flat/64.png`
+    //                 }
+    //             })
+    //             setAreas(areaData);
+    //             setdata_temp(areaData);
+    //             if (areaData.length > 0) {
+    //                 let defaultData = areaData.filter(a => a.code == "US");
+    //                 if (defaultData.length > 0) {
+    //                     setSelectedArea(defaultData[0]);
+    //                 }
+    //             }
+    //         })
+    // }, [])
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
             <StatusBar backgroundColor={Colors.primaryColor} />
             <View style={{ flex: 1, justifyContent: 'center' }}>
                 <ScrollView showsVerticalScrollIndicator={false}
@@ -95,33 +112,93 @@ const Login = ({ navigation }) => {
                     {signInText()}
                     {mobileNumberInfo()}
                     {continueButton()}
-                    {otpInfo()}
+
+                    {/* {loginWithFacebookButton()}
+                    {logionWithGoogleButton()} */}
+                    <Snackbar
+                        duration={1000}
+                        style={styles.snackBarStyle}
+                        visible={showSnackBar}
+                        onDismiss={() => setShowSnackBar(false)}
+                    >
+                        <Text style={{ ...Fonts.whiteColor12Medium }}>
+                            {snackBarMsg}
+                        </Text>
+                    </Snackbar>
                 </ScrollView>
             </View>
-            {renderAreaCodesModal()}
+            {/* {renderAreaCodesModal()} */}
         </SafeAreaView>
     )
 
-    function otpInfo() {
-        return (
-            <Text style={{
-                ...Fonts.blackColor16Medium,
-                textAlign: 'center',
-                marginBottom: Sizes.fixPadding * 2.0,
-                marginTop: Sizes.fixPadding - 5.0,
-            }}>
-                We’ll send otp for verification
-            </Text>
-        )
-    }
+    // function logionWithGoogleButton() {
+    //     return (
+    //         <View style={styles.loginWithGoogleButtonStyle}>
+    //             <Image
+    //                 source={require('../../assets/images/google.png')}
+    //                 style={{ width: 30.0, height: 30.0, }}
+    //             />
+    //             <Text style={{ ...Fonts.blackColor14Medium, marginLeft: Sizes.fixPadding * 2.0 }}>
+    //                 Log in with Google
+    //             </Text>
+    //         </View >
+    //     )
+    // }
+
+    // function loginWithFacebookButton() {
+    //     return (
+    //         <View style={styles.loginWithFacebookButtonStyle}>
+    //             <Image
+    //                 source={require('../../assets/images/facebook.png')}
+    //                 style={{ width: 30.0, height: 30.0, }}
+    //             />
+    //             <Text style={{ ...Fonts.whiteColor14Medium, marginLeft: Sizes.fixPadding * 2.0 }}>
+    //                 Log in with Facebook
+    //             </Text>
+    //         </View>
+    //     )
+    // }
+
+    // function otpInfo() {
+    //     return (
+    //         <View style={styles.mobileNumberWrapStyle} >
+    //             <TouchableOpacity
+    //                 style={{
+    //                     marginRight: Sizes.fixPadding * 3.0,
+    //                     flexDirection: 'row',
+    //                     alignItems: 'center'
+    //                 }}
+    //                 onPress={() => setModalVisible(true)}
+    //             >
+    //                 <Image
+    //                     source={{ uri: selectedArea?.flag }}
+    //                     resizeMode="cover"
+    //                     style={{ height: 21.0, width: 35.0, }}
+    //                 />
+    //                 <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor14Regular }}>
+    //                     {selectedArea?.callingCode}
+    //                 </Text>
+    //             </TouchableOpacity >
+    //             <TextInput
+    //                 style={{ ...Fonts.blackColor14Regular, flex: 1 }}
+    //                 selectionColor={Colors.primaryColor}
+    //                 value={OTP}
+    //                 onChangeText={(text) => { setOTP(text) }}
+    //                 placeholder="Enter OTP"
+    //                 placeholderTextColor={Colors.blackColor}
+    //                 keyboardType='number-pad'
+    //             />
+    //         </View >
+    //     )
+    // }
 
     function continueButton() {
+
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('Otp')}
-                style={styles.continueButtonStyle}
-            >
+                onPress={handleContinue}
+                style={styles.continueButtonStyle}>
                 <Text style={{ ...Fonts.whiteColor14Bold }}>
                     Continue
                 </Text>
@@ -129,6 +206,38 @@ const Login = ({ navigation }) => {
         )
     }
 
+    // function verifyotpButton() {
+
+    //     return (
+    //         <TouchableOpacity
+    //             activeOpacity={0.9}
+    //             onPress={handleVerifyOTP}
+    //             style={styles.continueButtonStyle}>
+    //             <Text style={{ ...Fonts.whiteColor14Bold }}>
+    //                 Verify OTP
+    //             </Text>
+    //         </TouchableOpacity>
+    //     )
+    // }
+
+    function handleContinue() {
+
+        if (!mobileNumber) {
+            setShowSnackBar(true)
+            setSnackBarMsg('Please Enter Mobile Number')
+            return
+        }
+        var body = { "phone": "+923026102257" }
+
+        // wbh.postDataRequest(Routs.USER_PHONE_VERIFY, body, (res) => {
+        //     console.log(JSON.stringify(res))
+        //     if (res.responseStatus === 200) {
+        navigation.navigate('Otp', { phone: mobileNumber })
+        // }
+        // }, (error) => {
+        //     console.log("error==>" + error)
+        // })
+    }
     function signInText() {
         return (
             <Text style={{
@@ -136,117 +245,107 @@ const Login = ({ navigation }) => {
                 textAlign: 'center',
                 marginBottom: Sizes.fixPadding + 5.0
             }}>
-                Signin with phone number
-            </Text>
+                SignUp with phone number
+            </Text >
         )
     }
 
     function appLogo() {
         return (
-            <View>
-                <Image
-                    source={require('../../assets/images/icon.jpg')}
-                    style={styles.appLogoStyle}
-                    resizeMode="cover"
-                />
-                <Text style={{
-                    ...Fonts.grayColor14Medium,
-                    textAlign: 'center',
-                    marginTop: Sizes.fixPadding,
-                    marginBottom: Sizes.fixPadding + 5.0
-                }}>
-                    Provider
-                </Text>
-            </View>
+            <Image
+                source={require('../../assets/images/icon.jpg')}
+                style={styles.appLogoStyle}
+                resizeMode="cover"
+            />
         )
     }
 
-    function settingSearch(text) {
-        let data = [];
-        data_temp.map(function (value) {
-            if (value.name.indexOf(text) > -1) {
-                data.push(value);
-            }
-        });
-        setAreas(data);
-        setSearch(text);
-    }
+    // function settingSearch(text) {
+    //     let data = [];
+    //     data_temp.map(function (value) {
+    //         if (value.name.indexOf(text) > -1) {
+    //             data.push(value);
+    //         }
+    //     });
+    //     setAreas(data);
+    //     setSearch(text);
+    // }
 
-    function renderAreaCodesModal() {
+    // function renderAreaCodesModal() {
 
-        const renderItem = ({ item }) => {
-            return <TouchableOpacity
-                style={{
-                    padding: Sizes.fixPadding,
-                    flexDirection: 'row',
-                    alignItems: 'center'
-                }}
-                onPress={() => {
-                    setSelectedArea(item)
-                    setModalVisible(false)
-                }}
-            >
-                <Image
-                    source={{ uri: item.flag }}
-                    style={{
-                        width: 40.0,
-                        height: 40.0,
-                        marginRight: Sizes.fixPadding
-                    }}
-                />
-                <View style={{ marginLeft: Sizes.fixPadding }}>
-                    <Text style={{ ...Fonts.blackColor16Medium }}>
-                        {item.name}
-                    </Text>
-                    <Text style={{ ...Fonts.grayColor14Medium }}>
-                        {item.callingCode}
-                    </Text>
-                </View>
-            </TouchableOpacity>
-        }
+    //     const renderItem = ({ item }) => {
+    //         return <TouchableOpacity
+    //             style={{
+    //                 padding: Sizes.fixPadding,
+    //                 flexDirection: 'row',
+    //                 alignItems: 'center'
+    //             }}
+    //             onPress={() => {
+    //                 setSelectedArea(item)
+    //                 setModalVisible(false)
+    //             }}
+    //         >
+    //             <Image
+    //                 source={{ uri: item.flag }}
+    //                 style={{
+    //                     width: 40.0,
+    //                     height: 40.0,
+    //                     marginRight: Sizes.fixPadding
+    //                 }}
+    //             />
+    //             <View style={{ marginLeft: Sizes.fixPadding }}>
+    //                 <Text style={{ ...Fonts.blackColor16Medium }}>
+    //                     {item.name}
+    //                 </Text>
+    //                 <Text style={{ ...Fonts.grayColor14Medium }}>
+    //                     {item.callingCode}
+    //                 </Text>
+    //             </View>
+    //         </TouchableOpacity>
+    //     }
 
-        return (
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-            >
-                <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-                    <View style={{
-                        flex: 1, alignItems: 'center', justifyContent: 'center',
-                    }}>
-                        <View style={styles.selectAreaModalStyle}>
-                            <View style={styles.searchCountryTextFieldWrapStyle}>
-                                <TextInput
-                                    selectionColor={Colors.primaryColor}
-                                    placeholder='Search by country name or dial...'
-                                    labelTextStyle={{ ...Fonts.blackColor16Medium }}
-                                    style={{ ...Fonts.blackColor16Medium, marginBottom: Sizes.fixPadding }}
-                                    value={search}
-                                    onChangeText={(text) => settingSearch(text)}
-                                />
-                            </View>
-                            <FlatList
-                                data={areas}
-                                renderItem={renderItem}
-                                keyExtractor={(item) => item.code}
-                                showsVerticalScrollIndicator={false}
-                                style={{
-                                    padding: Sizes.fixPadding * 2.0,
-                                    marginBottom: Sizes.fixPadding * 2.0,
-                                }}
-                            />
-                        </View>
-                    </View>
-                </TouchableWithoutFeedback>
-            </Modal>
-        );
-    }
+    //     return (
+    //         <Modal
+    //             animationType="slide"
+    //             transparent={true}
+    //             visible={modalVisible}
+    //         >
+    //             <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+    //                 <View style={{
+    //                     flex: 1, alignItems: 'center', justifyContent: 'center',
+    //                 }}>
+    //                     <View style={styles.selectAreaModalStyle}>
+    //                         <View style={styles.searchCountryTextFieldWrapStyle}>
+    //                             <TextInput
+    //                                 selectionColor={Colors.primaryColor}
+    //                                 placeholder='Search by country name or dial...'
+    //                                 labelTextStyle={{ ...Fonts.blackColor16Medium }}
+    //                                 style={{ ...Fonts.blackColor16Medium, marginBottom: Sizes.fixPadding }}
+    //                                 value={search}
+    //                                 onChangeText={(text) => settingSearch(text)}
+    //                             />
+    //                         </View>
+    //                         <FlatList
+    //                             data={areas}
+    //                             renderItem={renderItem}
+    //                             keyExtractor={(item) => item.code}
+    //                             showsVerticalScrollIndicator={false}
+    //                             style={{
+    //                                 padding: Sizes.fixPadding * 2.0,
+    //                                 marginBottom: Sizes.fixPadding * 2.0,
+    //                             }}
+    //                         />
+    //                     </View>
+    //                 </View>
+    //             </TouchableWithoutFeedback>
+    //         </Modal>
+    //     );
+    // }
 
     function mobileNumberInfo() {
         return (
             <View style={styles.mobileNumberWrapStyle} >
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={{
                         marginRight: Sizes.fixPadding * 3.0,
                         flexDirection: 'row',
@@ -262,7 +361,7 @@ const Login = ({ navigation }) => {
                     <Text style={{ marginLeft: Sizes.fixPadding, ...Fonts.blackColor14Regular }}>
                         {selectedArea?.callingCode}
                     </Text>
-                </TouchableOpacity >
+                </TouchableOpacity > */}
                 <TextInput
                     style={{ ...Fonts.blackColor14Regular, flex: 1 }}
                     selectionColor={Colors.primaryColor}
@@ -270,7 +369,8 @@ const Login = ({ navigation }) => {
                     onChangeText={(text) => { setMobileNumber(text) }}
                     placeholder="Phone Number"
                     placeholderTextColor={Colors.blackColor}
-                    keyboardType="numeric"
+                    keyboardType="number-pad"
+                    maxLength={11}
                 />
             </View >
         )
@@ -335,9 +435,10 @@ const styles = StyleSheet.create({
         marginBottom: Sizes.fixPadding - 5.0
     },
     appLogoStyle: {
-        width: 290.0,
-        height: 150.0,
+        width: 200.0,
+        height: 200.0,
         alignSelf: 'center',
+        marginBottom: Sizes.fixPadding * 2.0
     }
 })
 

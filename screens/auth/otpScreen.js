@@ -18,10 +18,22 @@ import { TransitionPresets } from 'react-navigation-stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import { CircleFade } from 'react-native-animated-spinkit';
 import Dialog from "react-native-dialog";
-
+import { Snackbar } from "react-native-paper";
+import WebHandler from "../../Data/Remote/WebHandler";
+import Routs from "../../Data/Remote/Routs";
+const wbh = new WebHandler()
 const { width } = Dimensions.get('screen');
 
 class OtpScreen extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: 'www.javatpoint.com',
+            PHONE: this.props.navigation.getParam('phone')
+
+        }
+    }
 
     componentDidMount() {
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton.bind(this));
@@ -32,7 +44,7 @@ class OtpScreen extends Component {
     }
 
     handleBackButton = () => {
-        this.props.navigation.goBack();
+        this.props.navigation.pop();
         return true;
     };
 
@@ -42,12 +54,21 @@ class OtpScreen extends Component {
         secondDigit: '',
         thirdDigit: '',
         forthDigit: '',
+        fifthDigit: '',
+        sixthDigit: '',
+        OTP: '',
+        showSnackBar: false,
+        snackBarMsg: '',
     }
 
     render() {
+
+
+        console.log("PHONE YOU ENTER FIRST ====> " + this.state.PHONE)
+
         return (
             <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>
-                <StatusBar translucent={false} backgroundColor={Colors.primaryColor} />
+                <StatusBar backgroundColor={Colors.primaryColor} />
                 <View style={{ flex: 1, }}>
                     {this.backArrow()}
                     <ScrollView
@@ -59,6 +80,16 @@ class OtpScreen extends Component {
                         {this.otpFields()}
                         {this.resendInfo()}
                         {this.continueButton()}
+                        <Snackbar
+                            duration={1000}
+                            style={styles.snackBarStyle}
+                            visible={this.state.showSnackBar}
+                            onDismiss={() => this.setState({ showSnackBar: false })}
+                        >
+                            <Text style={{ ...Fonts.whiteColor12Medium }}>
+                                {this.state.snackBarMsg}
+                            </Text>
+                        </Snackbar>
                     </ScrollView>
                     {this.loading()}
                 </View>
@@ -75,7 +106,10 @@ class OtpScreen extends Component {
             >
                 <View style={{ backgroundColor: 'white', alignItems: 'center', }}>
                     <CircleFade size={55} color={Colors.primaryColor} />
-                    <Text style={{ ...Fonts.grayColor12Medium, marginTop: Sizes.fixPadding * 2.0 }}>
+                    <Text style={{
+                        ...Fonts.grayColor12Medium,
+                        marginTop: Sizes.fixPadding * 2.0
+                    }}>
                         Please wait..
                     </Text>
                 </View>
@@ -149,18 +183,63 @@ class OtpScreen extends Component {
                         ref={(input) => { this.forthTextInput = input; }}
                         onChangeText={(text) => {
                             this.setState({ forthDigit: text })
+                            this.fifthTextInput.focus();
+                        }}
+                    />
+                </View>
+                <View style={styles.textFieldWrapStyle}>
+                    <TextInput
+                        selectionColor={Colors.primaryColor}
+                        style={{ ...Fonts.blackColor16Bold, paddingLeft: Sizes.fixPadding }}
+                        keyboardType="numeric"
+                        value={this.state.fifthDigit}
+                        ref={(input) => { this.fifthTextInput = input; }}
+                        onChangeText={(text) => {
+                            this.setState({ fifthDigit: text })
+                            this.sixthTextInput.focus();
+                        }}
+                    />
+                </View>
+                <View style={styles.textFieldWrapStyle}>
+                    <TextInput
+                        selectionColor={Colors.primaryColor}
+                        style={{ ...Fonts.blackColor16Bold, paddingLeft: Sizes.fixPadding }}
+                        keyboardType="numeric"
+                        value={this.state.sixthDigit}
+                        ref={(input) => { this.sixthTextInput = input; }}
+                        onChangeText={(text) => {
+                            this.setState({ sixthDigit: text })
                             this.setState({ isLoading: true })
                             setTimeout(() => {
-                                this.setState({ isLoading: false })
-                                this.props.navigation.navigate('BottomTabBar');
+                                this.setState({ OTP: this.state.firstDigit + this.state.secondDigit + this.state.thirdDigit + this.state.forthDigit + this.state.fifthDigit + this.state.sixthDigit })
+                                this.handleVerifyOTP()
                             }, 2000);
+
                         }}
                     />
                 </View>
             </View>
         )
     }
+    handleVerifyOTP = () => {
+        // if (!this.state.OTP) {
+        //     this.setState({showSnackBar:true,isLoading:false})
+        //     this.setState({snackBarMsg:'Please Enter Valid OTP'})
+        //     return
+        // }  
+        // var body = { "otp_code": this.state.OTP }
 
+        // wbh.postDataRequest(Routs.VALIDATE_USER_OTP, body, (res) => {
+        //     if (res.responseStatus === 200) {
+        // this.setState({ isLoading: false })
+        this.props.navigation.navigate('Register', { phone: this.state.PHONE })
+        //     }
+        // }, (error) => {
+        //     this.setState({ isLoading: false })
+        //     this.setState({showSnackBar:true})
+        //     this.setState({snackBarMsg:error})
+        // })
+    }
     otpInfo() {
         return (
             <Text style={{
@@ -174,20 +253,11 @@ class OtpScreen extends Component {
 
     appLogo() {
         return (
-            <View>
-                <Image
-                    source={require('../../assets/images/icon.jpg')}
-                    style={styles.appLogoStyle}
-                    resizeMode="cover"
-                />
-                <Text style={{
-                    ...Fonts.grayColor14Medium, textAlign: 'center',
-                    marginTop: Sizes.fixPadding,
-                    marginBottom: Sizes.fixPadding + 5.0
-                }}>
-                    Provider
-                </Text>
-            </View>
+            <Image
+                source={require('../../assets/images/icon.jpg')}
+                style={styles.appLogoStyle}
+                resizeMode="cover"
+            />
         )
     }
 
@@ -207,15 +277,8 @@ class OtpScreen extends Component {
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
-                onPress={() => {
-                    this.setState({ isLoading: true })
-                    setTimeout(() => {
-                        this.setState({ isLoading: false })
-                        this.props.navigation.navigate('BottomTabBar');
-                    }, 2000);
-                }}
-                style={styles.continueButtonStyle}
-            >
+                onPress={this.handleVerifyOTP}
+                style={styles.continueButtonStyle}>
                 <Text style={{ ...Fonts.whiteColor14Bold }}>
                     Continue
                 </Text>
@@ -235,13 +298,14 @@ const styles = StyleSheet.create({
         marginVertical: Sizes.fixPadding * 2.0
     },
     appLogoStyle: {
-        width: 290.0,
-        height: 150.0,
+        width: 200.0,
+        height: 200.0,
         alignSelf: 'center',
+        marginBottom: Sizes.fixPadding * 2.0
     },
     textFieldWrapStyle: {
-        height: 60.0,
-        width: 60.0,
+        height: 50.0,
+        width: 50.0,
         borderRadius: Sizes.fixPadding,
         backgroundColor: Colors.whiteColor,
         elevation: 3.0,

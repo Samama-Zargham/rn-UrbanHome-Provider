@@ -8,7 +8,7 @@ class SplashScreen extends Component {
 
     render() {
         setTimeout(() => {
-            this.props.navigation.navigate('Login');
+            this.props.navigation.navigate('Login1');
         }, 2000);
         return (
             <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bodyBackColor }}>

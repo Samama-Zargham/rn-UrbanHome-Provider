@@ -14,6 +14,9 @@ import splashScreen from "./screens/splashScreen";
 import supportScreen from "./screens/support/supportScreen";
 import termsOfUseScreen from "./screens/termsOfUse/termsOfUseScreen";
 import upcomingBookingDetailScreen from "./screens/upcomingBookingDetail/upcomingBookingDetailScreen";
+import registerScreen from "./screens/auth/registerScreen";
+import Login1 from "./screens/auth/Login";
+import Profile from "./screens/auth/Profile";
 
 const switchNavigator = createSwitchNavigator({
   Loading: LoadingScreen,
@@ -21,6 +24,9 @@ const switchNavigator = createSwitchNavigator({
   mainFlow: createStackNavigator({
     Login: loginScreen,
     Otp: otpScreen,
+    Login1: Login1,
+    Register: registerScreen,
+    Profile: Profile,
     BottomTabBar: bottomTabBarScreen,
     BookingRequest: bookingRequestScreen,
     NextBookingRequestDetail: nextBookingRequestDetailScreen,

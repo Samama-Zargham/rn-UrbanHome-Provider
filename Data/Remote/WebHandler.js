@@ -2,6 +2,32 @@
 import axios from "axios"
 const isDebugging = true
 export default class WebHandler {
+
+    General_GET_From_WEB_Without_ID(URL, OnSuccess, onFailure) {
+        fetch(URL)
+            .then((response) => response.json())
+            .then((json) => {
+                // console.log("=========== 111 =====>> ",json.data)
+                OnSuccess(json.data)
+            })
+            .catch((error) => {
+                console.log(error)
+                onFailure(error)
+            })
+    }
+    General_GET_From_WEB_Without_ID1(URL, OnSuccess, onFailure) {
+        fetch(URL)
+            .then((response) => response.json())
+            .then((json) => {
+                // console.log("=========== 22222 =====>> ",json)
+                OnSuccess(json)
+            })
+            .catch((error) => {
+                console.log(error)
+                onFailure(error)
+            })
+    }
+
     postDataRequest(url, bodyParams, onSuccess, onFailure) {
         var bodyParams = bodyParams ? bodyParams : {}
         let headers = { 'Content-Type': 'application/json' }
@@ -57,8 +83,8 @@ const sendPostRequest = (Url, headers, bodyParams, OnSuccess, OnError) => {
         var responseData = response.data
         var responseStatus = response.status
         var responseJSON = { responseData, responseStatus }
-        if (responseData && responseStatus==200) {
-            //alert(responseJson)
+        if (responseData && responseStatus == 200) {
+            // console.log("first"+JSON.stringify(responseJSON))
             OnSuccess(responseJSON)
         } else {
             console.log('***************')
@@ -79,7 +105,7 @@ const sendPostRequest = (Url, headers, bodyParams, OnSuccess, OnError) => {
 
 const sendGetRequest = (Url, headers, headerParams, OnSuccess, OnError) => {
     if (isDebugging) {
-        console.log("------------API POST REQUEST--------------")
+        console.log("------------API GET REQUEST--------------")
         console.log("URL==>", Url)
         console.log("HEADER==>", headers)
         console.log("HEADERPARAMS==>", JSON.stringify(headerParams))
